@@ -1,4 +1,4 @@
-import Knex from 'knex'
+import { Knex } from 'knex'
 import { getDatabaseWithJsonColumnImplementation } from './impl'
 import { JsonRef } from './json'
 
