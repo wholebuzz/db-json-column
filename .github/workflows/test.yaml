@@ -8,8 +8,6 @@ jobs:
         image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
         env:
           ACCEPT_EULA: Y
-          DB_USER: SA
-          DB_NAME: test_db
           MSSQL_PID: Express
           SA_PASSWORD: Secure-Password.1234
         ports:
@@ -61,7 +59,7 @@ jobs:
       env:
         MSSQL_DB_USER: SA
         MSSQL_DB_PASS: Secure-Password.1234
-        MSSQL_DB_NAME: test_db
+        MSSQL_DB_NAME: master
         MSSQL_DB_HOST: 127.0.0.1
         MSSQL_DB_PORT: 1433
         MYSQL_DB_USER: root
