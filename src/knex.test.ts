@@ -1,5 +1,5 @@
 import { Knex, knex as newKnex } from 'knex'
-import { knexSelectAndParseJson, knexUpdateJson } from './knex'
+import { selectAndParseJson, updateJson } from './knex'
 
 const tableName = 'db_json_column_test'
 const record1 = { id: 1, data: { foo: 'bar', baz: 'bat', bazel: { mimble: 'wimble' } } }
@@ -128,22 +128,22 @@ describe('postgres', () => {
 })
 
 async function testSelect(knex: Knex) {
-  expect(await knexSelectAndParseJson(knex, knex(tableName), ['data.foo'])).toEqual([
+  expect(await selectAndParseJson(knex, knex(tableName), ['data.foo'])).toEqual([
     {
       data: { foo: 'bar' },
     },
   ])
-  expect(await knexSelectAndParseJson(knex, knex(tableName).where('id', 1), ['data.baz'])).toEqual([
+  expect(await selectAndParseJson(knex, knex(tableName).where('id', 1), ['data.baz'])).toEqual([
     {
       data: { baz: 'bat' },
     },
   ])
-  expect(await knexSelectAndParseJson(knex, knex(tableName), ['data.foo', 'data.baz'])).toEqual([
+  expect(await selectAndParseJson(knex, knex(tableName), ['data.foo', 'data.baz'])).toEqual([
     {
       data: { foo: 'bar', baz: 'bat' },
     },
   ])
-  expect(await knexSelectAndParseJson(knex, knex(tableName), ['data.foo', 'data.bazel'])).toEqual([
+  expect(await selectAndParseJson(knex, knex(tableName), ['data.foo', 'data.bazel'])).toEqual([
     {
       data: { foo: 'bar', bazel: { mimble: 'wimble' } },
     },
@@ -151,14 +151,14 @@ async function testSelect(knex: Knex) {
 }
 
 async function testUpdate(knex: Knex) {
-  await knexUpdateJson(knex, knex(tableName), ['data.foo'], { data: { foo: 'zap' } })
-  expect(await knexSelectAndParseJson(knex, knex(tableName), ['data.foo'])).toEqual([
+  await updateJson(knex, knex(tableName), ['data.foo'], { data: { foo: 'zap' } })
+  expect(await selectAndParseJson(knex, knex(tableName), ['data.foo'])).toEqual([
     {
       data: { foo: 'zap' },
     },
   ])
-  await knexUpdateJson(knex, knex(tableName).where('id', 1), ['data.baz'], { data: { baz: 'bap' } })
-  expect(await knexSelectAndParseJson(knex, knex(tableName), ['data.baz'])).toEqual([
+  await updateJson(knex, knex(tableName).where('id', 1), ['data.baz'], { data: { baz: 'bap' } })
+  expect(await selectAndParseJson(knex, knex(tableName), ['data.baz'])).toEqual([
     {
       data: { baz: 'bap' },
     },

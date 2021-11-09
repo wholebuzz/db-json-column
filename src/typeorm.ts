@@ -1,34 +1,40 @@
-import { Knex } from 'knex'
+import { Connection, QueryBuilder, SelectQueryBuilder } from 'typeorm'
 import { getDatabaseWithJsonColumnImplementation } from './impl'
 import { JsonRef } from './json'
 
-export const getClientType = (knex: Knex): string => (knex as any).context.client.config.client
+export const getDriverType = (conn: Connection): string => conn.driver.options.type
 
-export async function selectAndParseJson(
-  knex: Knex,
-  inputQuery: Knex.QueryBuilder,
+export async function selectAndParseJson<Entity>(
+  inputQuery: QueryBuilder<Entity>,
   fields: string[]
 ) {
-  const { query, returningAs } = selectJson(knex, inputQuery, fields)
-  return parseRowJson(knex, await query, returningAs)
+  const { query, returningAs } = selectJson(inputQuery, fields)
+  return parseRawJson(query, returningAs)
 }
 
-export function selectJson(knex: Knex, query: Knex.QueryBuilder, fields: string[]) {
-  const impl = getDatabaseWithJsonColumnImplementation(getClientType(knex))
+export function selectJson<Entity>(query: QueryBuilder<Entity>, fields: string[]) {
+  const impl = getDatabaseWithJsonColumnImplementation(getDriverType(query.connection))
   if (impl) {
     const select = impl.returningJsonRefsAs(fields)
-    return { ...select, query: query.select(select.fields.map((x) => knex.raw(x))) }
+    return { ...select, query: query.select(select.fields) }
   } else {
     return { returningAs: undefined, query: query.select(fields) }
   }
 }
 
+export async function parseRawJson<Entity>(
+  query: SelectQueryBuilder<Entity>,
+  returningAs?: Record<string, JsonRef>
+) {
+  return parseRowJson(query.connection, await query.getRawMany(), returningAs)
+}
+
 export function parseRowJson(
-  knex: Knex,
+  conn: Connection,
   rows: Array<Record<string, any>>,
   returningAs?: Record<string, JsonRef>
 ) {
-  const impl = getDatabaseWithJsonColumnImplementation(getClientType(knex))
+  const impl = getDatabaseWithJsonColumnImplementation(getDriverType(conn))
   if (impl) {
     return rows.map((row) => impl.assembleReturningJsonRefsAs(row, returningAs))
   } else {
@@ -36,7 +42,8 @@ export function parseRowJson(
   }
 }
 
-export function updateJson(
+/*
+export function knexUpdateJson(
   knex: Knex,
   query: Knex.QueryBuilder,
   fields: string[],
@@ -44,7 +51,7 @@ export function updateJson(
   extra?: Record<string, any>
 ) {
   const update: Record<string, any> = {}
-  const impl = getDatabaseWithJsonColumnImplementation(getClientType(knex))
+  const impl = getDatabaseWithJsonColumnImplementation(getKnexClientType(knex))
   if (impl) {
     const updateKeys = impl.separateJsonRefs(fields)
     for (const field of updateKeys.fields) update[field] = value[field]
@@ -60,3 +67,4 @@ export function updateJson(
   }
   return query.update(update)
 }
+*/

@@ -8,6 +8,7 @@ export function getDatabaseWithJsonColumnImplementation(type: string) {
       return mssqlDatabseWithJsonColumn
     case 'mysql':
       return mysqlDatabseWithJsonColumn
+    case 'postgres':
     case 'postgresql':
       return postgresDatabseWithJsonColumn
     default:
