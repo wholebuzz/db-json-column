@@ -29,6 +29,10 @@ export abstract class DatabaseWithJsonColumn {
   abstract formatJsonRef(ref: JsonRef): string
   abstract updateJsonColumn(column: string, keys: string[], values: Record<string, any>): UpdateJsonColumn
 
+  parseJsonColumnValue(x: string) {
+    return x
+  }
+
   formatJsonRefText(x: string) {
     return this.formatJsonRef(parseJsonRef(x))
   }
@@ -53,7 +57,7 @@ export abstract class DatabaseWithJsonColumn {
         const v = row[key]
         if (v) {
           if (!ret[ref.jsonColumn]) ret[ref.jsonColumn] = {}
-          ret[ref.jsonColumn][ref.jsonField] = v
+          ret[ref.jsonColumn][ref.jsonField] = this.parseJsonColumnValue(v)
         }
       } else {
         ret[key] = row[key]

@@ -1,6 +1,6 @@
 import { DatabaseWithJsonColumn, JsonRef } from './json'
 
-export class MysqlDatabseWithJsonColumn extends DatabaseWithJsonColumn {
+export class MssqlDatabseWithJsonColumn extends DatabaseWithJsonColumn {
   constructor() {
     super()
   }
@@ -10,7 +10,8 @@ export class MysqlDatabseWithJsonColumn extends DatabaseWithJsonColumn {
   }
 
   formatJsonRef(ref: JsonRef): string {
-    return `${ref.jsonColumn}->"$.${ref.jsonField}"`
+    const refText = `${ref.jsonColumn},'$.${ref.jsonField}'`
+    return `COALESCE('"'+JSON_VALUE(${refText})+'"', JSON_QUERY(${refText}))`
   }
 
   updateJsonColumn(column: string, keys: string[], values: Record<string, any>) {
@@ -24,4 +25,4 @@ export class MysqlDatabseWithJsonColumn extends DatabaseWithJsonColumn {
   }
 }
 
-export const mysqlDatabseWithJsonColumn = new MysqlDatabseWithJsonColumn()
+export const mssqlDatabseWithJsonColumn = new MssqlDatabseWithJsonColumn()

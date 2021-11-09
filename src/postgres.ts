@@ -2,7 +2,7 @@ import { DatabaseWithJsonColumn, JsonRef } from './json'
 
 export class PostgresDatabseWithJsonColumn extends DatabaseWithJsonColumn {
   formatJsonRef(ref: JsonRef): string {
-    return `${ref.jsonColumn}->>'${ref.jsonField}'`
+    return `${ref.jsonColumn}->'${ref.jsonField}'`
   }
 
   updateJsonColumn(column: string, keys: string[], values: Record<string, any>) {
