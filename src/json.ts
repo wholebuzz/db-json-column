@@ -7,7 +7,7 @@ export interface ReturningJsonRefsAs {
   fields: string[]
   returningAs: Record<string, JsonRef>
 }
-  
+
 export interface SeparateJsonRefs {
   fields: string[]
   jsonRefs: Record<string, Record<string, any>>
@@ -27,7 +27,11 @@ export function parseJsonRef(x: string): JsonRef {
 
 export abstract class DatabaseWithJsonColumn {
   abstract formatJsonRef(ref: JsonRef): string
-  abstract updateJsonColumn(column: string, keys: string[], values: Record<string, any>): UpdateJsonColumn
+  abstract updateJsonColumn(
+    column: string,
+    fields: string[],
+    value: Record<string, any>
+  ): UpdateJsonColumn
 
   parseJsonColumnValue(x: string) {
     return x
@@ -48,7 +52,10 @@ export abstract class DatabaseWithJsonColumn {
     return { fields, returningAs }
   }
 
-  assembleReturningJsonRefsAs(row: Record<string, any>, returningAs?: Record<string, JsonRef>): Record<string, any> {
+  assembleReturningJsonRefsAs(
+    row: Record<string, any>,
+    returningAs?: Record<string, JsonRef>
+  ): Record<string, any> {
     if (!returningAs) return row
     const ret: Record<string, any> = {}
     for (const key of Object.keys(row)) {

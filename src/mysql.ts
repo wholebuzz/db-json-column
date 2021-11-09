@@ -15,9 +15,9 @@ export class MysqlDatabseWithJsonColumn extends DatabaseWithJsonColumn {
 
   updateJsonColumn(column: string, keys: string[], values: Record<string, any>) {
     const binds: string[] = []
-    let update = `jsonb_set(${column},`
+    let update = `JSON_SET(${column},`
     keys.forEach((k) => {
-      update += ` '{${k}}', to_jsonb(?::text),`
+      update += ` "$.${k}", ?,`
       binds.push(values[k])
     })
     return { update: update.substring(0, update.length - 1) + ')', binds }

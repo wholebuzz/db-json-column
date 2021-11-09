@@ -5,12 +5,12 @@ export class PostgresDatabseWithJsonColumn extends DatabaseWithJsonColumn {
     return `${ref.jsonColumn}->'${ref.jsonField}'`
   }
 
-  updateJsonColumn(column: string, keys: string[], values: Record<string, any>) {
+  updateJsonColumn(column: string, fields: string[], value: Record<string, any>) {
     const binds: string[] = []
     let update = `jsonb_set(${column},`
-    keys.forEach((k) => {
+    fields.forEach((k) => {
       update += ` '{${k}}', to_jsonb(?::text),`
-      binds.push(values[k])
+      binds.push(value[k])
     })
     return { update: update.substring(0, update.length - 1) + ')', binds }
   }

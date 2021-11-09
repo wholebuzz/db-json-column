@@ -1,5 +1,5 @@
 import { Knex, knex as newKnex } from 'knex'
-import { knexAssembleJson, knexSelectJson } from './knex'
+import { knexSelectAndParseJson, knexUpdateJson } from './knex'
 
 const tableName = 'db_json_column_test'
 const record1 = { id: 1, data: { foo: 'bar', baz: 'bat', bazel: { mimble: 'wimble' } } }
@@ -37,11 +37,14 @@ describe('mssql', () => {
     await testSelect(knex)
   })
 
+  it('Should update json field value on test row', async () => {
+    await testUpdate(knex)
+  })
+
   afterAll(async () => {
     await knex.destroy()
   })
 })
-
 
 describe('mysql', () => {
   let knex: Knex
@@ -73,6 +76,10 @@ describe('mysql', () => {
 
   it('Should select json field value from test row', async () => {
     await testSelect(knex)
+  })
+
+  it('Should update json field value on test row', async () => {
+    await testUpdate(knex)
   })
 
   afterAll(async () => {
@@ -111,22 +118,57 @@ describe('postgres', () => {
     await testSelect(knex)
   })
 
+  it('Should update json field value on test row', async () => {
+    await testUpdate(knex)
+  })
+
   afterAll(async () => {
     await knex.destroy()
   })
 })
 
 async function testSelect(knex: Knex) {
-  let { query, returningAs } = knexSelectJson(knex, knex(tableName), ['data.foo'])
-  expect(knexAssembleJson(knex, await query, returningAs)[0]).toEqual({ data: { foo: 'bar' } })
-  ;({ query, returningAs } = knexSelectJson(knex, knex(tableName), ['data.baz']))
-  expect(knexAssembleJson(knex, await query, returningAs)[0]).toEqual({ data: { baz: 'bat' } })
-  ;({ query, returningAs } = knexSelectJson(knex, knex(tableName), ['data.foo', 'data.baz']))
-  expect(knexAssembleJson(knex, await query, returningAs)[0]).toEqual({
-    data: { foo: 'bar', baz: 'bat' },
+  expect(await knexSelectAndParseJson(knex, knex(tableName), ['data.foo'])).toEqual([
+    {
+      data: { foo: 'bar' },
+    },
+  ])
+  expect(await knexSelectAndParseJson(knex, knex(tableName).where('id', 1), ['data.baz'])).toEqual([
+    {
+      data: { baz: 'bat' },
+    },
+  ])
+  expect(await knexSelectAndParseJson(knex, knex(tableName), ['data.foo', 'data.baz'])).toEqual([
+    {
+      data: { foo: 'bar', baz: 'bat' },
+    },
+  ])
+  expect(await knexSelectAndParseJson(knex, knex(tableName), ['data.foo', 'data.bazel'])).toEqual([
+    {
+      data: { foo: 'bar', bazel: { mimble: 'wimble' } },
+    },
+  ])
+}
+
+async function testUpdate(knex: Knex) {
+  await knexUpdateJson(knex, knex(tableName), ['data.foo'], { data: { foo: 'zap' } })
+  expect(await knexSelectAndParseJson(knex, knex(tableName), ['data.foo'])).toEqual([
+    {
+      data: { foo: 'zap' },
+    },
+  ])
+  await knexUpdateJson(knex, knex(tableName).where('id', 1), ['data.baz'], { data: { baz: 'bap' } })
+  expect(await knexSelectAndParseJson(knex, knex(tableName), ['data.baz'])).toEqual([
+    {
+      data: { baz: 'bap' },
+    },
+  ])
+  /*await knexUpdateJson(knex, knex(tableName), ['data.foo', 'data.baz'], {
+    data: { foo: 's13', baz: 's14' },
   })
-  ;({ query, returningAs } = knexSelectJson(knex, knex(tableName), ['data.foo', 'data.bazel']))
-  expect(knexAssembleJson(knex, await query, returningAs)[0]).toEqual({
-    data: { foo: 'bar', bazel: { mimble: 'wimble' } },
-  })
+  expect(await knexSelectAndParseJson(knex, knex(tableName), ['data.foo', 'data.baz'])).toEqual([
+    {
+      data: { foo: 's13', baz: 's14' },
+    },
+  ])*/
 }
