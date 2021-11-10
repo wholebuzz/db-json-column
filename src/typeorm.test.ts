@@ -2,6 +2,36 @@ import { Connection, createConnection, Repository } from 'typeorm'
 import { DbJsonColumnTest } from './entity/DbJsonColumnTest'
 import { selectAndParseJson, updateJson } from './typeorm'
 
+describe('mysql', () => {
+  let connection: Connection
+
+  beforeAll(async () => {
+    connection = await createConnection({
+      type: 'mysql',
+      host: process.env.MYSQL_DB_HOST ?? '',
+      port: parseInt(process.env.MYSQL_DB_PORT ?? '', 10),
+      username: process.env.MYSQL_DB_USER ?? '',
+      password: process.env.MYSQL_DB_PASS ?? '',
+      database: process.env.MYSQL_DB_NAME ?? '',
+      entities: [DbJsonColumnTest],
+      synchronize: true,
+      logging: false,
+    })
+  })
+
+  it('Should select json field value from test row', async () => {
+    await testSelect(connection.getRepository('DbJsonColumnTest'))
+  })
+
+  it('Should update json field value on test row', async () => {
+    await testUpdate(connection.getRepository('DbJsonColumnTest'))
+  })
+
+  afterAll(async () => {
+    await connection.close()
+  })
+})
+
 describe('postgres', () => {
   let connection: Connection
 
@@ -57,9 +87,15 @@ async function testSelect<Entity>(repository: Repository<Entity>) {
 }
 
 async function testUpdate<Entity>(repository: Repository<Entity>) {
-  await updateJson(repository.createQueryBuilder().update(), ['data.foo'], {
-    data: { foo: 'zazzle' },
-  }).execute()
+  const options = { jsonb: false }
+  await updateJson(
+    repository.createQueryBuilder().update(),
+    ['data.foo'],
+    {
+      data: { foo: 'zazzle' },
+    },
+    options
+  ).execute()
   expect(await selectAndParseJson(repository.createQueryBuilder(), ['data.foo'])).toEqual([
     {
       data: { foo: 'zazzle' },

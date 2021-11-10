@@ -47,13 +47,12 @@ export function updateJson<Entity>(
   query: UpdateQueryBuilder<Entity>,
   fields: string[],
   value: Record<string, any>,
-  extra?: Record<string, any>,
   options?: UpdateJsonColumnOptions
 ) {
   const update: Record<string, any> = {}
   const impl = getDatabaseWithJsonColumnImplementation(getDriverType(query.connection))
   if (impl) {
-    const updateKeys = impl.separateJsonRefs(fields)
+    const updateKeys = impl.prepareUpdateJsonRefs(fields)
     for (const field of updateKeys.fields) update[field] = value[field]
     for (const [field, fieldProps] of Object.entries(updateKeys.jsonRefs)) {
       const updateField = impl.updateJsonColumn(field, Object.keys(fieldProps), value[field], {
@@ -68,8 +67,8 @@ export function updateJson<Entity>(
   } else {
     for (const field of fields) update[field] = value[field]
   }
-  if (extra) {
-    for (const field of Object.keys(extra)) update[field] = extra[field]
+  if (options?.extra) {
+    for (const field of Object.keys(options.extra)) update[field] = options.extra[field]
   }
   return query.set(update as QueryDeepPartialEntity<Entity>)
 }

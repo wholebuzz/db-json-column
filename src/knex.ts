@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
 import { getDatabaseWithJsonColumnImplementation } from './impl'
-import { JsonRef } from './json'
+import { JsonRef, UpdateJsonColumnOptions } from './json'
 
 export const getClientType = (knex: Knex): string => (knex as any).context.client.config.client
 
@@ -41,22 +41,27 @@ export function updateJson(
   query: Knex.QueryBuilder,
   fields: string[],
   value: Record<string, any>,
-  extra?: Record<string, any>
+  options?: UpdateJsonColumnOptions
 ) {
   const update: Record<string, any> = {}
   const impl = getDatabaseWithJsonColumnImplementation(getClientType(knex))
   if (impl) {
-    const updateKeys = impl.separateJsonRefs(fields)
+    const updateKeys = impl.prepareUpdateJsonRefs(fields)
     for (const field of updateKeys.fields) update[field] = value[field]
     for (const [field, fieldProps] of Object.entries(updateKeys.jsonRefs)) {
-      const updateField = impl.updateJsonColumn(field, Object.keys(fieldProps), value[field])
+      const updateField = impl.updateJsonColumn(
+        field,
+        Object.keys(fieldProps),
+        value[field],
+        options
+      )
       update[field] = knex.raw(updateField.update, Object.values(updateField.binds))
     }
   } else {
     for (const field of fields) update[field] = value[field]
   }
-  if (extra) {
-    for (const field of Object.keys(extra)) update[field] = extra[field]
+  if (options?.extra) {
+    for (const field of Object.keys(options.extra)) update[field] = options.extra[field]
   }
   return query.update(update)
 }

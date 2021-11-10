@@ -6,7 +6,7 @@ export class DbJsonColumnTest {
   id: number
 
   @Column({
-    type: 'jsonb',
+    type: 'json',
   })
   data: Record<string, any>
 }

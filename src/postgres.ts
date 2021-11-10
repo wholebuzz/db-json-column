@@ -11,15 +11,15 @@ export class PostgresDatabaseWithJsonColumn extends DatabaseWithJsonColumn {
     value: Record<string, any>,
     options?: UpdateJsonColumnOptions
   ) {
-    const jsonb = options?.jsonb === false ? 'json' : 'jsonb'
+    const jsonb = options?.jsonb !== false
     const binds: Record<string, any> = {}
-    let update = `${jsonb}_set(${column},`
+    let update = `jsonb_set(${column}${jsonb ? '' : '::jsonb'},`
     fields.forEach((k) => {
       const binding = options?.namedBinding ? `(:${k})` : '?'
-      update += ` '{${k}}', to_${jsonb}(${binding}::text),`
+      update += ` '{${k}}', to_jsonb(${binding}::text),`
       binds[k] = value[k]
     })
-    return { update: update.substring(0, update.length - 1) + ')', binds }
+    return { update: update.substring(0, update.length - 1) + `)${jsonb ? '' : '::json'}`, binds }
   }
 }
 

@@ -16,14 +16,15 @@ export class MysqlDatabaseWithJsonColumn extends DatabaseWithJsonColumn {
   updateJsonColumn(
     column: string,
     keys: string[],
-    values: Record<string, any>,
-    _options?: UpdateJsonColumnOptions
+    value: Record<string, any>,
+    options?: UpdateJsonColumnOptions
   ) {
-    const binds: string[] = []
+    const binds: Record<string, any> = {}
     let update = `JSON_SET(${column},`
     keys.forEach((k) => {
-      update += ` "$.${k}", ?,`
-      binds.push(values[k])
+      const binding = options?.namedBinding ? `(:${k})` : '?'
+      update += ` "$.${k}", ${binding},`
+      binds[k] = value[k]
     })
     return { update: update.substring(0, update.length - 1) + ')', binds }
   }

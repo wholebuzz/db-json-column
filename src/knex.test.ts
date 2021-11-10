@@ -64,7 +64,7 @@ describe('mysql', () => {
     if (tableExists) await knex.schema.dropTable(tableName)
     await knex.schema.createTable(tableName, (table) => {
       table.integer('id').primary()
-      table.jsonb('data')
+      table.json('data')
     })
   })
 
@@ -105,7 +105,7 @@ describe('postgres', () => {
     if (tableExists) await knex.schema.dropTable(tableName)
     await knex.schema.createTable(tableName, (table) => {
       table.integer('id').primary()
-      table.jsonb('data')
+      table.json('data')
     })
   })
 
@@ -151,13 +151,20 @@ async function testSelect(knex: Knex) {
 }
 
 async function testUpdate(knex: Knex) {
-  await updateJson(knex, knex(tableName), ['data.foo'], { data: { foo: 'zap' } })
+  const options = { jsonb: false }
+  await updateJson(knex, knex(tableName), ['data.foo'], { data: { foo: 'zap' } }, options)
   expect(await selectAndParseJson(knex, knex(tableName), ['data.foo'])).toEqual([
     {
       data: { foo: 'zap' },
     },
   ])
-  await updateJson(knex, knex(tableName).where('id', 1), ['data.baz'], { data: { baz: 'bap' } })
+  await updateJson(
+    knex,
+    knex(tableName).where('id', 1),
+    ['data.baz'],
+    { data: { baz: 'bap' } },
+    options
+  )
   expect(await selectAndParseJson(knex, knex(tableName), ['data.baz'])).toEqual([
     {
       data: { baz: 'bap' },

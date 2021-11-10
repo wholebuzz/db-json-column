@@ -8,7 +8,7 @@ export interface ReturningJsonRefsAs {
   returningAs: Record<string, JsonRef>
 }
 
-export interface SeparateJsonRefs {
+export interface UpdateJsonRefs {
   fields: string[]
   jsonRefs: Record<string, Record<string, any>>
 }
@@ -19,6 +19,7 @@ export interface UpdateJsonColumn {
 }
 
 export interface UpdateJsonColumnOptions {
+  extra?: Record<string, any>
   jsonb?: boolean
   namedBinding?: boolean
 }
@@ -79,7 +80,7 @@ export abstract class DatabaseWithJsonColumn {
     return ret
   }
 
-  separateJsonRefs(fields: string[]): SeparateJsonRefs {
+  prepareUpdateJsonRefs(fields: string[]): UpdateJsonRefs {
     const jsonRefs: Record<string, Record<string, any>> = {}
     fields = fields.filter((x) => {
       const ref = parseJsonRef(x)
