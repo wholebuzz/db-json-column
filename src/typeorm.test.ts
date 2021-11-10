@@ -1,6 +1,38 @@
 import { Connection, createConnection, Repository } from 'typeorm'
 import { DbJsonColumnTest } from './entity/DbJsonColumnTest'
+import { DbJsonColumnTest as DbTextColumnTest } from './entity/DbTextColumnTest'
 import { selectAndParseJson, updateJson } from './typeorm'
+
+describe('mssql', () => {
+  let connection: Connection
+
+  beforeAll(async () => {
+    connection = await createConnection({
+      type: 'mssql',
+      host: process.env.MSSQL_DB_HOST ?? '',
+      port: parseInt(process.env.MSSQL_DB_PORT ?? '', 10),
+      username: process.env.MSSQL_DB_USER ?? '',
+      password: process.env.MSSQL_DB_PASS ?? '',
+      database: process.env.MSSQL_DB_NAME ?? '',
+      entities: [DbTextColumnTest],
+      synchronize: true,
+      logging: false,
+      extra: { trustServerCertificate: true },
+    })
+  })
+
+  it('Should select json field value from test row', async () => {
+    await testSelect(connection.getRepository('DbJsonColumnTest'))
+  })
+
+  it('Should update json field value on test row', async () => {
+    await testUpdate(connection.getRepository('DbJsonColumnTest'))
+  })
+
+  afterAll(async () => {
+    await connection.close()
+  })
+})
 
 describe('mysql', () => {
   let connection: Connection
