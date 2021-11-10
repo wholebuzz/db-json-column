@@ -30,7 +30,7 @@ export function parseRowJson(
 ) {
   const impl = getDatabaseWithJsonColumnImplementation(getClientType(knex))
   if (impl) {
-    return rows.map((row) => impl.assembleReturningJsonRefsAs(row, returningAs))
+    return rows.map((row) => impl.parseRowWithJsonRefs(row, returningAs))
   } else {
     return rows
   }
@@ -50,7 +50,7 @@ export function updateJson(
     for (const field of updateKeys.fields) update[field] = value[field]
     for (const [field, fieldProps] of Object.entries(updateKeys.jsonRefs)) {
       const updateField = impl.updateJsonColumn(field, Object.keys(fieldProps), value[field])
-      update[field] = knex.raw(updateField.update, updateField.binds)
+      update[field] = knex.raw(updateField.update, Object.values(updateField.binds))
     }
   } else {
     for (const field of fields) update[field] = value[field]

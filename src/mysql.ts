@@ -1,6 +1,6 @@
-import { DatabaseWithJsonColumn, JsonRef } from './json'
+import { DatabaseWithJsonColumn, JsonRef, UpdateJsonColumnOptions } from './json'
 
-export class MysqlDatabseWithJsonColumn extends DatabaseWithJsonColumn {
+export class MysqlDatabaseWithJsonColumn extends DatabaseWithJsonColumn {
   constructor() {
     super()
   }
@@ -13,7 +13,12 @@ export class MysqlDatabseWithJsonColumn extends DatabaseWithJsonColumn {
     return `${ref.jsonColumn}->"$.${ref.jsonField}"`
   }
 
-  updateJsonColumn(column: string, keys: string[], values: Record<string, any>) {
+  updateJsonColumn(
+    column: string,
+    keys: string[],
+    values: Record<string, any>,
+    _options?: UpdateJsonColumnOptions
+  ) {
     const binds: string[] = []
     let update = `JSON_SET(${column},`
     keys.forEach((k) => {
@@ -24,4 +29,4 @@ export class MysqlDatabseWithJsonColumn extends DatabaseWithJsonColumn {
   }
 }
 
-export const mysqlDatabseWithJsonColumn = new MysqlDatabseWithJsonColumn()
+export const mysqlDatabseWithJsonColumn = new MysqlDatabaseWithJsonColumn()

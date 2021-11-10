@@ -1,6 +1,7 @@
-import { Connection, QueryBuilder, SelectQueryBuilder } from 'typeorm'
+import { Connection, QueryBuilder, SelectQueryBuilder, UpdateQueryBuilder } from 'typeorm'
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity'
 import { getDatabaseWithJsonColumnImplementation } from './impl'
-import { JsonRef } from './json'
+import { JsonRef, UpdateJsonColumnOptions } from './json'
 
 export const getDriverType = (conn: Connection): string => conn.driver.options.type
 
@@ -36,28 +37,33 @@ export function parseRowJson(
 ) {
   const impl = getDatabaseWithJsonColumnImplementation(getDriverType(conn))
   if (impl) {
-    return rows.map((row) => impl.assembleReturningJsonRefsAs(row, returningAs))
+    return rows.map((row) => impl.parseRowWithJsonRefs(row, returningAs))
   } else {
     return rows
   }
 }
 
-/*
-export function knexUpdateJson(
-  knex: Knex,
-  query: Knex.QueryBuilder,
+export function updateJson<Entity>(
+  query: UpdateQueryBuilder<Entity>,
   fields: string[],
   value: Record<string, any>,
-  extra?: Record<string, any>
+  extra?: Record<string, any>,
+  options?: UpdateJsonColumnOptions
 ) {
   const update: Record<string, any> = {}
-  const impl = getDatabaseWithJsonColumnImplementation(getKnexClientType(knex))
+  const impl = getDatabaseWithJsonColumnImplementation(getDriverType(query.connection))
   if (impl) {
     const updateKeys = impl.separateJsonRefs(fields)
     for (const field of updateKeys.fields) update[field] = value[field]
     for (const [field, fieldProps] of Object.entries(updateKeys.jsonRefs)) {
-      const updateField = impl.updateJsonColumn(field, Object.keys(fieldProps), value[field])
-      update[field] = knex.raw(updateField.update, updateField.binds)
+      const updateField = impl.updateJsonColumn(field, Object.keys(fieldProps), value[field], {
+        ...options,
+        namedBinding: true,
+      })
+      update[field] = () => updateField.update
+      for (const [bindKey, bindVal] of Object.entries(updateField.binds)) {
+        query = query.setParameter(bindKey, bindVal)
+      }
     }
   } else {
     for (const field of fields) update[field] = value[field]
@@ -65,6 +71,5 @@ export function knexUpdateJson(
   if (extra) {
     for (const field of Object.keys(extra)) update[field] = extra[field]
   }
-  return query.update(update)
+  return query.set(update as QueryDeepPartialEntity<Entity>)
 }
-*/

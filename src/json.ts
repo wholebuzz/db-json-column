@@ -14,8 +14,13 @@ export interface SeparateJsonRefs {
 }
 
 export interface UpdateJsonColumn {
-  binds: string[]
+  binds: Record<string, any>
   update: string
+}
+
+export interface UpdateJsonColumnOptions {
+  jsonb?: boolean
+  namedBinding?: boolean
 }
 
 export function parseJsonRef(x: string): JsonRef {
@@ -30,7 +35,8 @@ export abstract class DatabaseWithJsonColumn {
   abstract updateJsonColumn(
     column: string,
     fields: string[],
-    value: Record<string, any>
+    value: Record<string, any>,
+    options?: UpdateJsonColumnOptions
   ): UpdateJsonColumn
 
   parseJsonColumnValue(x: string) {
@@ -52,7 +58,7 @@ export abstract class DatabaseWithJsonColumn {
     return { fields, returningAs }
   }
 
-  assembleReturningJsonRefsAs(
+  parseRowWithJsonRefs(
     row: Record<string, any>,
     returningAs?: Record<string, JsonRef>
   ): Record<string, any> {

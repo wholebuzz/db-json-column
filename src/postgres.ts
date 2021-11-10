@@ -1,19 +1,26 @@
-import { DatabaseWithJsonColumn, JsonRef } from './json'
+import { DatabaseWithJsonColumn, JsonRef, UpdateJsonColumnOptions } from './json'
 
-export class PostgresDatabseWithJsonColumn extends DatabaseWithJsonColumn {
+export class PostgresDatabaseWithJsonColumn extends DatabaseWithJsonColumn {
   formatJsonRef(ref: JsonRef): string {
     return `${ref.jsonColumn}->'${ref.jsonField}'`
   }
 
-  updateJsonColumn(column: string, fields: string[], value: Record<string, any>) {
-    const binds: string[] = []
-    let update = `jsonb_set(${column},`
+  updateJsonColumn(
+    column: string,
+    fields: string[],
+    value: Record<string, any>,
+    options?: UpdateJsonColumnOptions
+  ) {
+    const jsonb = options?.jsonb === false ? 'json' : 'jsonb'
+    const binds: Record<string, any> = {}
+    let update = `${jsonb}_set(${column},`
     fields.forEach((k) => {
-      update += ` '{${k}}', to_jsonb(?::text),`
-      binds.push(value[k])
+      const binding = options?.namedBinding ? `(:${k})` : '?'
+      update += ` '{${k}}', to_${jsonb}(${binding}::text),`
+      binds[k] = value[k]
     })
     return { update: update.substring(0, update.length - 1) + ')', binds }
   }
 }
 
-export const postgresDatabseWithJsonColumn = new PostgresDatabseWithJsonColumn()
+export const postgresDatabseWithJsonColumn = new PostgresDatabaseWithJsonColumn()

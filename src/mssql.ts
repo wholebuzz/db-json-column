@@ -1,6 +1,6 @@
-import { DatabaseWithJsonColumn, JsonRef } from './json'
+import { DatabaseWithJsonColumn, JsonRef, UpdateJsonColumnOptions } from './json'
 
-export class MssqlDatabseWithJsonColumn extends DatabaseWithJsonColumn {
+export class MssqlDatabaseWithJsonColumn extends DatabaseWithJsonColumn {
   constructor() {
     super()
   }
@@ -14,7 +14,12 @@ export class MssqlDatabseWithJsonColumn extends DatabaseWithJsonColumn {
     return `COALESCE('"'+JSON_VALUE(${refText})+'"', JSON_QUERY(${refText}))`
   }
 
-  updateJsonColumn(column: string, keys: string[], values: Record<string, any>) {
+  updateJsonColumn(
+    column: string,
+    keys: string[],
+    values: Record<string, any>,
+    _options?: UpdateJsonColumnOptions
+  ) {
     const binds: string[] = []
     let update = `JSON_MODIFY(${column},`
     keys.forEach((k) => {
@@ -25,4 +30,4 @@ export class MssqlDatabseWithJsonColumn extends DatabaseWithJsonColumn {
   }
 }
 
-export const mssqlDatabseWithJsonColumn = new MssqlDatabseWithJsonColumn()
+export const mssqlDatabseWithJsonColumn = new MssqlDatabaseWithJsonColumn()

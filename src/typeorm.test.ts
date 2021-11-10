@@ -1,6 +1,6 @@
 import { Connection, createConnection, Repository } from 'typeorm'
 import { DbJsonColumnTest } from './entity/DbJsonColumnTest'
-import { selectAndParseJson } from './typeorm'
+import { selectAndParseJson, updateJson } from './typeorm'
 
 describe('postgres', () => {
   let connection: Connection
@@ -21,6 +21,10 @@ describe('postgres', () => {
 
   it('Should select json field value from test row', async () => {
     await testSelect(connection.getRepository('DbJsonColumnTest'))
+  })
+
+  it('Should update json field value on test row', async () => {
+    await testUpdate(connection.getRepository('DbJsonColumnTest'))
   })
 
   afterAll(async () => {
@@ -48,6 +52,31 @@ async function testSelect<Entity>(repository: Repository<Entity>) {
     expect(await selectAndParseJson(knex, knex(tableName), ['data.foo', 'data.bazel'])).toEqual([
       {
         data: { foo: 'bar', bazel: { mimble: 'wimble' } },
+      },
+    ])*/
+}
+
+async function testUpdate<Entity>(repository: Repository<Entity>) {
+  await updateJson(repository.createQueryBuilder().update(), ['data.foo'], {
+    data: { foo: 'zazzle' },
+  }).execute()
+  expect(await selectAndParseJson(repository.createQueryBuilder(), ['data.foo'])).toEqual([
+    {
+      data: { foo: 'zazzle' },
+    },
+  ])
+  /*await updateJson(knex, knex(tableName).where('id', 1), ['data.baz'], { data: { baz: 'bap' } })
+    expect(await selectAndParseJson(knex, knex(tableName), ['data.baz'])).toEqual([
+      {
+        data: { baz: 'bap' },
+      },
+    ])
+    await knexUpdateJson(knex, knex(tableName), ['data.foo', 'data.baz'], {
+      data: { foo: 's13', baz: 's14' },
+    })
+    expect(await knexSelectAndParseJson(knex, knex(tableName), ['data.foo', 'data.baz'])).toEqual([
+      {
+        data: { foo: 's13', baz: 's14' },
       },
     ])*/
 }
