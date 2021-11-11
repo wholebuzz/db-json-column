@@ -24,6 +24,17 @@ export interface UpdateJsonColumnOptions {
   namedBinding?: boolean
 }
 
+export interface FormatJsonRefOptions {
+  forWhereClause?: boolean
+}
+
+export interface FormatOnConflictOptions {
+  constraintName?: string
+  keys?: string[]
+  returning?: string[]
+  updateOnConflict?: string[]
+}
+
 export function parseJsonRef(x: string): JsonRef {
   const dot = x.indexOf('.')
   const jsonColumn = x.substring(0, dot)
@@ -32,13 +43,16 @@ export function parseJsonRef(x: string): JsonRef {
 }
 
 export abstract class DatabaseWithJsonColumn {
-  abstract formatJsonRef(ref: JsonRef): string
+  abstract formatJsonRef(ref: JsonRef, options?: FormatJsonRefOptions): string
+
   abstract updateJsonColumn(
     column: string,
     fields: string[],
     value: Record<string, any>,
     options?: UpdateJsonColumnOptions
   ): UpdateJsonColumn
+
+  abstract formatOnConflict(options: FormatOnConflictOptions): string
 
   parseJsonColumnValue(x: string) {
     return x

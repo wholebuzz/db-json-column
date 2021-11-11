@@ -1,4 +1,10 @@
-import { DatabaseWithJsonColumn, JsonRef, UpdateJsonColumnOptions } from './json'
+import {
+  DatabaseWithJsonColumn,
+  FormatJsonRefOptions,
+  FormatOnConflictOptions,
+  JsonRef,
+  UpdateJsonColumnOptions,
+} from './json'
 
 export class MysqlDatabaseWithJsonColumn extends DatabaseWithJsonColumn {
   constructor() {
@@ -9,7 +15,7 @@ export class MysqlDatabaseWithJsonColumn extends DatabaseWithJsonColumn {
     return JSON.parse(x)
   }
 
-  formatJsonRef(ref: JsonRef): string {
+  formatJsonRef(ref: JsonRef, _options?: FormatJsonRefOptions): string {
     return `${ref.jsonColumn}->"$.${ref.jsonField}"`
   }
 
@@ -27,6 +33,15 @@ export class MysqlDatabaseWithJsonColumn extends DatabaseWithJsonColumn {
       binds[k] = value[k]
     })
     return { update: update.substring(0, update.length - 1) + ')', binds }
+  }
+
+  formatOnConflict(options: FormatOnConflictOptions) {
+    return (
+      `ON DUPLICATE KEY UPDATE ` +
+      (options.updateOnConflict
+        ? options.updateOnConflict.map((x) => `${x}=VALUES(${x})`).join(', ')
+        : 'id = id')
+    )
   }
 }
 

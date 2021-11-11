@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
 import { getDatabaseWithJsonColumnImplementation } from './impl'
-import { JsonRef, UpdateJsonColumnOptions } from './json'
+import { FormatOnConflictOptions, JsonRef, parseJsonRef, UpdateJsonColumnOptions } from './json'
 
 export const getClientType = (knex: Knex): string => (knex as any).context.client.config.client
 
@@ -64,4 +64,41 @@ export function updateJson(
     for (const field of Object.keys(options.extra)) update[field] = options.extra[field]
   }
   return query.update(update)
+}
+
+export function whereJson(knex: Knex, query: Knex.QueryBuilder, where: any[]) {
+  const impl = getDatabaseWithJsonColumnImplementation(getClientType(knex))
+  const formatOptions = { forWhereClause: true }
+  if (Array.isArray(where[0])) {
+    for (const clause of where) {
+      if (Array.isArray(clause)) {
+        const ref = typeof clause[0] === 'string' ? parseJsonRef(clause[0]) : undefined
+        query = query.where(
+          impl && ref?.jsonColumn ? knex.raw(impl.formatJsonRef(ref, formatOptions)) : clause[0],
+          clause[1],
+          clause[2]
+        )
+      } else {
+        query = query.where(knex.raw(clause))
+      }
+    }
+  } else {
+    const ref = parseJsonRef(where[0])
+    query = query.where(
+      impl && ref ? knex.raw(impl.formatJsonRef(ref, formatOptions)) : where[0],
+      where[1],
+      where[2]
+    )
+  }
+  return query
+}
+
+export function updateOnConflict(
+  knex: Knex,
+  query: Knex.QueryBuilder,
+  options: FormatOnConflictOptions
+) {
+  const impl = getDatabaseWithJsonColumnImplementation(getClientType(knex))
+  if (!impl) return query
+  return knex.raw(`? ${impl.formatOnConflict(options)}`, [query])
 }

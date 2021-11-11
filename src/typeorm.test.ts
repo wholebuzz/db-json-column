@@ -100,22 +100,27 @@ async function testSelect<Entity>(repository: Repository<Entity>) {
       data: { foo: 'zap' },
     },
   ])
-  /*
-    expect(await selectAndParseJson(knex, knex(tableName).where('id', 1), ['data.baz'])).toEqual([
-      {
-        data: { baz: 'bat' },
-      },
-    ])
-    expect(await selectAndParseJson(knex, knex(tableName), ['data.foo', 'data.baz'])).toEqual([
-      {
-        data: { foo: 'bar', baz: 'bat' },
-      },
-    ])
-    expect(await selectAndParseJson(knex, knex(tableName), ['data.foo', 'data.bazel'])).toEqual([
-      {
-        data: { foo: 'bar', bazel: { mimble: 'wimble' } },
-      },
-    ])*/
+  expect(
+    await selectAndParseJson(repository.createQueryBuilder().where({ id: 1 }), ['data.baz'])
+  ).toEqual([
+    {
+      data: { baz: 'bap' },
+    },
+  ])
+  expect(
+    await selectAndParseJson(repository.createQueryBuilder(), ['data.foo', 'data.baz'])
+  ).toEqual([
+    {
+      data: { foo: 'zap', baz: 'bap' },
+    },
+  ])
+  expect(
+    await selectAndParseJson(repository.createQueryBuilder(), ['data.foo', 'data.bazel'])
+  ).toEqual([
+    {
+      data: { foo: 'zap', bazel: { mimble: 'wimble' } },
+    },
+  ])
 }
 
 async function testUpdate<Entity>(repository: Repository<Entity>) {
@@ -133,18 +138,17 @@ async function testUpdate<Entity>(repository: Repository<Entity>) {
       data: { foo: 'zazzle' },
     },
   ])
-  /*await updateJson(knex, knex(tableName).where('id', 1), ['data.baz'], { data: { baz: 'bap' } })
-    expect(await selectAndParseJson(knex, knex(tableName), ['data.baz'])).toEqual([
-      {
-        data: { baz: 'bap' },
-      },
-    ])
-    await knexUpdateJson(knex, knex(tableName), ['data.foo', 'data.baz'], {
-      data: { foo: 's13', baz: 's14' },
-    })
-    expect(await knexSelectAndParseJson(knex, knex(tableName), ['data.foo', 'data.baz'])).toEqual([
-      {
-        data: { foo: 's13', baz: 's14' },
-      },
-    ])*/
+  await updateJson(
+    repository.createQueryBuilder().update().where({ id: 1 }),
+    ['data.baz'],
+    {
+      data: { baz: 'bapel' },
+    },
+    options
+  ).execute()
+  expect(await selectAndParseJson(repository.createQueryBuilder(), ['data.baz'])).toEqual([
+    {
+      data: { baz: 'bapel' },
+    },
+  ])
 }
