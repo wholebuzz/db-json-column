@@ -9,6 +9,7 @@
 - [getClientType](knex.md#getclienttype)
 - [parseRowJson](knex.md#parserowjson)
 - [selectAndParseJson](knex.md#selectandparsejson)
+- [selectCount](knex.md#selectcount)
 - [selectJson](knex.md#selectjson)
 - [updateJson](knex.md#updatejson)
 - [updateOnConflict](knex.md#updateonconflict)
@@ -46,7 +47,7 @@ ___
 
 **Returns:** *Record*<string, any\>[]
 
-Defined in: [knex.ts:26](https://github.com/wholebuzz/db-json-column/blob/master/src/knex.ts#L26)
+Defined in: [knex.ts:40](https://github.com/wholebuzz/db-json-column/blob/master/src/knex.ts#L40)
 
 ___
 
@@ -63,6 +64,23 @@ ___
 | `fields` | *string*[] |
 
 **Returns:** *Promise*<Record<string, any\>[]\>
+
+Defined in: [knex.ts:21](https://github.com/wholebuzz/db-json-column/blob/master/src/knex.ts#L21)
+
+___
+
+### selectCount
+
+▸ **selectCount**(`knex`: Knex, `tableName`: *string*): *Promise*<number\>
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `knex` | Knex |
+| `tableName` | *string* |
+
+**Returns:** *Promise*<number\>
 
 Defined in: [knex.ts:7](https://github.com/wholebuzz/db-json-column/blob/master/src/knex.ts#L7)
 
@@ -82,7 +100,7 @@ ___
 
 **Returns:** { `fields`: *string*[] ; `query`: *QueryBuilder*<any, DeferredKeySelection<any, string, ``true``, Raw<any\>[], boolean, {}, unknown\> \| DeferredKeySelection<any, never, ``true``, Raw<any\>[], ``false``, {}, never\>\> ; `returningAs`: *Record*<string, [*JsonRef*](../interfaces/json.jsonref.md)\>  } \| { `query`: *QueryBuilder*<any, DeferredKeySelection<any, string, ``true``, {}, boolean, {}, unknown\> \| DeferredKeySelection<any, string, ``true``, {}, ``false``, {}, never\>\> ; `returningAs`: *undefined*  }
 
-Defined in: [knex.ts:16](https://github.com/wholebuzz/db-json-column/blob/master/src/knex.ts#L16)
+Defined in: [knex.ts:30](https://github.com/wholebuzz/db-json-column/blob/master/src/knex.ts#L30)
 
 ___
 
@@ -102,7 +120,7 @@ ___
 
 **Returns:** *QueryBuilder*<any, number\>
 
-Defined in: [knex.ts:39](https://github.com/wholebuzz/db-json-column/blob/master/src/knex.ts#L39)
+Defined in: [knex.ts:53](https://github.com/wholebuzz/db-json-column/blob/master/src/knex.ts#L53)
 
 ___
 
@@ -120,7 +138,7 @@ ___
 
 **Returns:** *QueryBuilder*<any, any\> \| *Raw*<any\>
 
-Defined in: [knex.ts:96](https://github.com/wholebuzz/db-json-column/blob/master/src/knex.ts#L96)
+Defined in: [knex.ts:110](https://github.com/wholebuzz/db-json-column/blob/master/src/knex.ts#L110)
 
 ___
 
@@ -138,4 +156,4 @@ ___
 
 **Returns:** *QueryBuilder*<any, any\>
 
-Defined in: [knex.ts:69](https://github.com/wholebuzz/db-json-column/blob/master/src/knex.ts#L69)
+Defined in: [knex.ts:83](https://github.com/wholebuzz/db-json-column/blob/master/src/knex.ts#L83)

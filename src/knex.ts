@@ -4,6 +4,20 @@ import { FormatOnConflictOptions, JsonRef, parseJsonRef, UpdateJsonColumnOptions
 
 export const getClientType = (knex: Knex): string => (knex as any).context.client.config.client
 
+export async function selectCount(knex: Knex, tableName: string): Promise<number> {
+  const client = getClientType(knex)
+  switch (client) {
+    case 'mssql':
+      return (await knex.raw(`SELECT COUNT(*) from ${tableName};`))[0]['']
+    case 'mysql':
+      return (await knex.raw(`SELECT COUNT(*) from ${tableName};`))[0][0]['COUNT(*)']
+    case 'postgresql':
+      return parseInt((await knex.raw(`SELECT COUNT(*) from ${tableName};`)).rows[0].count, 10)
+    default:
+      throw new Error(`selectCount unsupported client: ${client}`)
+  }
+}
+
 export async function selectAndParseJson(
   knex: Knex,
   inputQuery: Knex.QueryBuilder,
