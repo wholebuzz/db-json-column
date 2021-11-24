@@ -1,5 +1,11 @@
 import { Knex, knex as newKnex } from 'knex'
-import { selectAndParseJson, updateJson, updateOnConflict, whereJson } from './knex'
+import {
+  selectAndParseJson,
+  selectServerTimestamp,
+  updateJson,
+  updateOnConflict,
+  whereJson,
+} from './knex'
 
 const tableName = 'db_json_column_test'
 const record1 = { id: 1, data: { foo: 'bar', baz: 'bat', bazel: { mimble: 'wimble' } } }
@@ -41,6 +47,10 @@ describe('mssql', () => {
     await testUpdate(knex)
   })
 
+  it('Should select server timestamp', async () => {
+    await testSelectServerTimestamp(knex)
+  })
+
   afterAll(async () => {
     await knex.destroy()
   })
@@ -58,6 +68,7 @@ describe('mysql', () => {
         password: process.env.MYSQL_DB_PASS ?? '',
         host: process.env.MYSQL_DB_HOST ?? '',
         port: parseInt(process.env.MYSQL_DB_PORT ?? '', 10),
+        timezone: 'UTC',
       },
     })
     const tableExists = await knex.schema.hasTable(tableName)
@@ -84,6 +95,10 @@ describe('mysql', () => {
 
   it('Should update json field value on test row', async () => {
     await testUpdate(knex)
+  })
+
+  it('Should select server timestamp', async () => {
+    await testSelectServerTimestamp(knex)
   })
 
   afterAll(async () => {
@@ -128,6 +143,10 @@ describe('postgres', () => {
 
   it('Should update json field value on test row', async () => {
     await testUpdate(knex)
+  })
+
+  it('Should select server timestamp', async () => {
+    await testSelectServerTimestamp(knex)
   })
 
   afterAll(async () => {
@@ -192,4 +211,11 @@ async function testUpdate(knex: Knex) {
       data: { baz: 'bap' },
     },
   ])
+}
+
+async function testSelectServerTimestamp(knex: Knex) {
+  const date = await selectServerTimestamp(knex)
+  const now = new Date()
+  expect(date instanceof Date).toBe(true)
+  expect(Math.abs(now.getTime() - date.getTime())).toBeLessThan(1000 * 60)
 }

@@ -4,6 +4,20 @@ import { FormatOnConflictOptions, JsonRef, parseJsonRef, UpdateJsonColumnOptions
 
 export const getClientType = (knex: Knex): string => (knex as any).context.client.config.client
 
+export async function selectServerTimestamp(knex: Knex): Promise<Date> {
+  const client = getClientType(knex)
+  switch (client) {
+    case 'mssql':
+      return (await knex.raw(`SELECT current_timestamp;`))[0]['']
+    case 'mysql':
+      return (await knex.raw(`SELECT utc_timestamp();`))[0][0]['utc_timestamp()']
+    case 'postgresql':
+      return (await knex.raw(`SELECT current_timestamp;`)).rows[0].current_timestamp
+    default:
+      throw new Error(`selectServerTimestamp unsupported client: ${client}`)
+  }
+}
+
 export async function selectCount(knex: Knex, tableName: string): Promise<number> {
   const client = getClientType(knex)
   switch (client) {
